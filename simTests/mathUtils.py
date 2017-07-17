@@ -1,5 +1,7 @@
 import math
 from klampt.math import so3
+
+## Get rotation matrix from zyx Euler angles
 def euler_zyx_mat(theta):
     """For the zyx euler angles theta=(rz,ry,rx), produces a matrix A such that
     A*dtheta is the angular velocities when dtheta is the rate of change of the
@@ -35,6 +37,7 @@ def euler_zyx_mat(theta):
     rotMat = [cphi*ctht, sphi*cpsi+cphi*stht*spsi, sphi*spsi-cphi*stht*cpsi, -sphi*ctht, cphi*cpsi-sphi*stht*spsi, cphi*spsi+sphi*stht*cpsi, stht,-spsi*ctht, cpsi*ctht]
     return rotMat
 
+## The function below is incomplete
 def euler_zyx_mat_inv(theta):
     """Returns the inverse of the matrix returned by the above procedure"""
     c0 = math.cos(theta[0])

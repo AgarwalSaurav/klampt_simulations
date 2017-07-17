@@ -1,5 +1,10 @@
+#!/usr/bin/python
 
-
+## The functions are for creating additional components for the environment
+##  1. getWall: Get the geometry of a wall based on given dimensions
+##  2. getWall_terrain: Attach a single wall to terrain
+##  3. getDoubleRoomDoor: Build two rooms with a door on the separating wall
+##  4. getDoubleRoomWindow: Build two rooms with a window on the separating wall
 import sys
 from klampt import *
 from klampt import vis

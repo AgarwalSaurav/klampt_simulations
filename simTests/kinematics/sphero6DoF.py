@@ -1,3 +1,9 @@
+#!/usr/bin/python
+## The class contains wrapper functions to set and get configuration of 6DoF spherical robot
+## The first three elements of the configuration are (x, y, z)
+## The next three are zyx Euler angles
+## The function getTransform is for getting the rotation and the translation of the current position of the robot
+
 from klampt import *
 from klampt import vis
 from klampt.vis.glcommon import GLWidgetPlugin
