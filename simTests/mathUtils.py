@@ -1,4 +1,4 @@
-
+import math
 from klampt.math import so3
 def euler_zyx_mat(theta):
     """For the zyx euler angles theta=(rz,ry,rx), produces a matrix A such that
@@ -22,7 +22,18 @@ def euler_zyx_mat(theta):
     #A = [ 0 -s0 c1c0]
     #    [ 0  c0 c1s0]
     #    [ 1  0  -s1 ]    
-    return zip(col1,col2,col3)
+    #return [col1[2], col2[2], col3[2], col1[1], col2[1], col3[1], col1[0], col2[0], col3[0]]
+    phi = theta[0]
+    tht = theta[1]
+    psi = theta[2]
+    cphi = math.cos(phi)
+    sphi = math.sin(phi)
+    ctht = math.cos(tht)
+    stht = math.sin(tht)
+    cpsi = math.cos(psi)
+    spsi = math.sin(psi)
+    rotMat = [cphi*ctht, sphi*cpsi+cphi*stht*spsi, sphi*spsi-cphi*stht*cpsi, -sphi*ctht, cphi*cpsi-sphi*stht*spsi, cphi*spsi+sphi*stht*cpsi, stht,-spsi*ctht, cpsi*ctht]
+    return rotMat
 
 def euler_zyx_mat_inv(theta):
     """Returns the inverse of the matrix returned by the above procedure"""

@@ -46,7 +46,7 @@ if __name__ == "__main__":
     #setRandomSeed(int(time.time()))
     #world.robot(0).randomizeConfig()
     
-    robot = sphero6DoF(world.robot(0))
+    robot = sphero6DoF(vis, world.robot(0))
     q = robot.getConfig()
     q[2] = 1
     robot.setConfig(q)
@@ -93,17 +93,23 @@ if __name__ == "__main__":
     while vis.shown():
         vis.lock()
         #TODO: you may modify the world here.
-        pt[0] = math.sin(time.time())
-        pt[1] = math.cos(time.time())
+        q = robot.getConfig()
+        q[0] = math.sin(time.time())
+        q[1] = math.cos(time.time())
+        q[3] = 2 * math.pi * (math.cos(time.time()) + 1)
+        q[4] = 2 * math.pi * (math.sin(time.time()) + 1)
+        q[5] = 2 * math.pi * (math.sin(time.time() + math.pi/4.0) + 1)
+        robot.setConfig(q)
         pt[2] = 0.5
-        tht = time.time()
-        phi = math.pi/4.0 + time.time()
-        alpha = math.pi/3.0 + time.time()
-        rotVec = [math.sin(tht)*math.cos(phi), math.sin(tht)*math.sin(phi), math.cos(tht)]
-        rotAng = math.pi*math.sin(alpha)
-        rotMat = so3.rotation(rotVec, rotAng)
+        #tht = time.time()
+        #phi = math.pi/4.0 + time.time()
+        #alpha = math.pi/3.0 + time.time()
+        #rotVec = [math.sin(tht)*math.cos(phi), math.sin(tht)*math.sin(phi), math.cos(tht)]
+        #rotAng = math.pi*math.sin(alpha)
+        #rotMat = so3.rotation(rotVec, rotAng)
         #vis.remove("pt")
-        vis.add("pt",[rotMat, pt], keepAppearance=True)
+        trans = robot.getTransform()
+        vis.add("pt", [trans[0], trans[1]], keepAppearance=True)
         vis.unlock()
         vis.edit("pt")
         #changes to the visualization must be done outside the lock
