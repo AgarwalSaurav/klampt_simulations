@@ -1,5 +1,7 @@
 # Kinematic simulations using Klampt
 
-Execution:
+###Execution:
+```
 cd simTests
 python kinematicSim.py simpleWorld.xml
+```
