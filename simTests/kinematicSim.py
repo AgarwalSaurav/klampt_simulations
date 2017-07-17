@@ -11,7 +11,8 @@ from klampt.math import so3
 import time
 import math
 import buildWorld as bW
-
+sys.path.append("./kinematics/")
+from sphero6DoF import sphero6DoF
 if __name__ == "__main__":
     print "vistemplate.py: This example demonstrates how to run the visualization framework"
     if len(sys.argv)<=1:
@@ -45,7 +46,13 @@ if __name__ == "__main__":
     #setRandomSeed(int(time.time()))
     #world.robot(0).randomizeConfig()
     
-
+    robot = sphero6DoF(world.robot(0))
+    q = robot.getConfig()
+    q[2] = 1
+    robot.setConfig(q)
+    trans = robot.getTransform()
+    print(trans[1])
+    print(trans[0])
     ## Display the world coordinate system
     vis.add("WCS",[so3.identity(),[0,0,0]])
     vis.setAttribute("WCS", "size", 24)
@@ -59,6 +66,8 @@ if __name__ == "__main__":
     vis.add("pt",[rotMat, pt])
     vis.setAttribute("pt", "size", 32)
     vis.edit("pt")
+    pt = trans[1]
+    rotMat = trans[0]
     #test the on-screen text display
     vis.addText("text2","Here's some red text")
     vis.setColor("text2",1,0,0)

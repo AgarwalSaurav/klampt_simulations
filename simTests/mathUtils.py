@@ -1,5 +1,6 @@
 
-def euler_zyx_moments(theta):
+from klampt.math import so3
+def euler_zyx_mat(theta):
     """For the zyx euler angles theta=(rz,ry,rx), produces a matrix A such that
     A*dtheta is the angular velocities when dtheta is the rate of change of the
     euler angles"""
@@ -23,7 +24,7 @@ def euler_zyx_moments(theta):
     #    [ 1  0  -s1 ]    
     return zip(col1,col2,col3)
 
-def euler_zyx_moments_inv(theta):
+def euler_zyx_mat_inv(theta):
     """Returns the inverse of the matrix returned by the above procedure"""
     c0 = math.cos(theta[0])
     s0 = math.sin(theta[0])
