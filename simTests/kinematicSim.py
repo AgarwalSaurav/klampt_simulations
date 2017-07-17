@@ -1,4 +1,10 @@
 #!/usr/bin/python
+## The file demonstrates:
+##   1. Adding rooms and walls to the environment (refer to buildWorld.py as well)
+##   2. Setting up a robot
+##   3. Perform collision checking
+##   4. Modify the robot configurations and visualize
+##   5. Adding text objects and modifying them
 
 import sys
 from klampt import *
@@ -8,18 +14,20 @@ from klampt.vis.glcommon import GLWidgetPlugin
 from klampt import RobotPoser
 from klampt.model import ik,coordinates
 from klampt.math import so3
+import klampt.model.collide as collide
 import time
 import math
 import buildWorld as bW
 sys.path.append("./kinematics/")
 from sphero6DoF import sphero6DoF
+from decimal import Decimal
+
 if __name__ == "__main__":
-    print "vistemplate.py: This example demonstrates how to run the visualization framework"
     if len(sys.argv)<=1:
-        print "USAGE: vistemplate.py [world_file]"
+        print "USAGE: kinematicSim.py [world_file]"
         exit()
 
-    #creates a world and loads all the items on the command line
+    ## Creates a world and loads all the items on the command line
     world = WorldModel()
     for fn in sys.argv[1:]:
         res = world.readFile(fn)
@@ -31,50 +39,24 @@ if __name__ == "__main__":
     ## Get walls
     #bW.getDoubleRoomWindow(world, 8, 8, 1.2)
     bW.getDoubleRoomDoor(world, 8, 8, 1)
-    #add the world to the visualizer
+
+    ## Add the world to the visualizer
     vis.add("world",world)
 
-    #add the coordinate Manager to the visualizer
-    #vis.add("coordinates",coordinates.manager())
-    
     vp = vis.getViewport()
-    vp.w,vp.h = 800,800
+    vp.w,vp.h = 1200,800
     vis.setViewport(vp)
 
-    #do this if you want to test the robot configuration auto-fitting
-    #vis.add("text1","Using a random configuration")
-    #setRandomSeed(int(time.time()))
-    #world.robot(0).randomizeConfig()
-    
-    robot = sphero6DoF(vis, world.robot(0))
-    q = robot.getConfig()
-    q[2] = 1
-    robot.setConfig(q)
-    trans = robot.getTransform()
-    print(trans[1])
-    print(trans[0])
+    ## Create robot object. Change the class to the desired robot. 
+    ## Also, make sure the robot class corresponds to the robot in simpleWorld.xml file
+    #robot = kobukiHolonomic(world.robot(0), vis)
+    #robot = turtlebot(world.robot(0), vis)
+    robot = sphero6DoF(world.robot(0), vis)
+
     ## Display the world coordinate system
     vis.add("WCS",[so3.identity(),[0,0,0]])
     vis.setAttribute("WCS", "size", 24)
 
-    link = world.robot(0).link(0)
-    ## Setup a 6 DoF point robot
-    pt = [0, 0, 0]
-    rotVec = [0, 0, 1]
-    rotAng = 0
-    rotMat = so3.rotation(rotVec, rotAng)
-    vis.add("pt",[rotMat, pt])
-    vis.setAttribute("pt", "size", 32)
-    vis.edit("pt")
-    pt = trans[1]
-    rotMat = trans[0]
-    #test the on-screen text display
-    vis.addText("text2","Here's some red text")
-    vis.setColor("text2",1,0,0)
-    vis.addText("text3","Here's bigger text")
-    vis.setAttribute("text3","size",24)
-    vis.addText("text4","Transform status")
-    vis.addText("textbottom","WCS: X-axis Red, Y-axis Green, Z-axis Blue",(20,-30))
 
     #vis.addPlot('plot')
     #vis.setPlotDuration('plot',10.0)
@@ -83,35 +65,65 @@ if __name__ == "__main__":
     vis.listItems(indent=2)
 
     vis.autoFitCamera()
+    print("Collision check:")
+    vis.addText("textCol", "No collision")
+    vis.setAttribute("textCol","size",24)
+    collisionFlag = False
+    collisionChecker = collide.WorldCollider(world)
+    for i,j in collisionChecker.collisionTests():
+        if i[1].collides(j[1]):
+            collisionFlag = True
+            strng = "Object "+i[0].getName()+" collides with "+j[0].getName()
+            print(strng)
+            vis.addText("textCol", strng)
 
-    print "Starting visualization window..."
-    #run the visualizer, which runs in a separate thread
+    ## On-screen text display
+    vis.addText("textConfig","Robot configuration: ")
+    vis.setAttribute("textConfig","size",24)
+    vis.addText("textbottom","WCS: X-axis Red, Y-axis Green, Z-axis Blue",(20,-30))
+
+    print "Starting visualization window#..."
+
+    ## Run the visualizer, which runs in a separate thread
     vis.setWindowTitle("Visualization for kinematic simulation")
 
+    collisionFlag = collisionChecker.robotTerrainCollisions(world.robot(0), world.terrain(0))
+    print(collisionFlag)
+    print(next(collisionFlag))
     vis.show()
-    iteration = 0
-    while vis.shown():
+    simTime = 30
+    startTime = time.time()
+    while vis.shown() and (time.time() - startTime < simTime):
         vis.lock()
-        #TODO: you may modify the world here.
+        ## TODO: you may modify the world here.
+        ## Specifying change in configuration of the robot
         q = robot.getConfig()
         q[0] = math.sin(time.time())
         q[1] = math.cos(time.time())
+        q[2] = 0.5
         q[3] = 2 * math.pi * (math.cos(time.time()) + 1)
         q[4] = 2 * math.pi * (math.sin(time.time()) + 1)
         q[5] = 2 * math.pi * (math.sin(time.time() + math.pi/4.0) + 1)
         robot.setConfig(q)
-        pt[2] = 0.5
-        #tht = time.time()
-        #phi = math.pi/4.0 + time.time()
-        #alpha = math.pi/3.0 + time.time()
-        #rotVec = [math.sin(tht)*math.cos(phi), math.sin(tht)*math.sin(phi), math.cos(tht)]
-        #rotAng = math.pi*math.sin(alpha)
-        #rotMat = so3.rotation(rotVec, rotAng)
-        #vis.remove("pt")
-        trans = robot.getTransform()
-        vis.add("pt", [trans[0], trans[1]], keepAppearance=True)
+        q2f = [ '{0:.2f}'.format(elem) for elem in q]
+        strng = "Robot configuration: " + str(q2f)
+        vis.addText("textConfig", strng)
+
+        ## Checking collision
+        collisionFlag = False
+        for i,j in collisionChecker.collisionTests():
+            if i[1].collides(j[1]):
+                collisionFlag = True
+                strng = "Object "+i[0].getName()+" collides with "+j[0].getName()
+                print(strng)
+                vis.addText("textCol", strng)
+                vis.setColor("textCol", 0.8500, 0.3250, 0.0980)
+
+        if not collisionFlag:
+            vis.addText("textCol", "No collision")
+            vis.setColor("textCol", 0.4660, 0.6740, 0.1880)
+
         vis.unlock()
-        vis.edit("pt")
         #changes to the visualization must be done outside the lock
         time.sleep(0.01)
     vis.clearText()

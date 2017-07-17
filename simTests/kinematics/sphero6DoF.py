@@ -1,7 +1,18 @@
+from klampt import *
+from klampt import vis
+from klampt.vis.glcommon import GLWidgetPlugin
+from klampt.math import so3
 import mathUtils
 class sphero6DoF(object):
-    def __init__ (self, robot):
+    def __init__ (self, robot, vis=None):
         self.robot = robot
+        self.vis = vis
+        rotMat = so3.identity()
+        pt = [0, 0, 0]
+        if self.vis is not None:
+            self.vis.add("Robot",[rotMat, pt])
+            self.vis.setAttribute("Robot", "size", 32)
+            self.vis.edit("Robot")
 
     def getConfig(self):
         q = self.robot.getConfig()
@@ -16,6 +27,11 @@ class sphero6DoF(object):
         q[4] = qC[4]
         q[5] = qC[5]
         self.robot.setConfig(q)
+        if self.vis is not None:
+            trans = self.getTransform()
+            rotMat = trans[0]
+            pt = trans[1]
+            self.vis.add("Robot",[rotMat, pt], keepAppearance=True)
         
     def getTransform(self):
         q = self.robot.getConfig()
