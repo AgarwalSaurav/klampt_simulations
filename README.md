@@ -15,8 +15,18 @@ python kinematicSim.py simpleWorld.xml
 2. turtlebot: Differential drive robot with two degrees of freedom.
 3. R2-D2: Can be used as a differential drive robot.
 4. sphero: It is a three degrees of freedom robot. However, it can be forced as
-   a six DoF system as done in the sampls.
+   a six DoF system as done in the samples.
 
 ### Simulation files
 
-   The folder 
+   The folder `simTests` contains files to perform simple kinematic simulations.
+   1. simpleWorld.xml: Contains information on which robot to use and the size
+      of the terrain. One should modify this file (or make a copy) to change the type of robot.
+   2. kinematicSim.py: Creates visualization for kinematic simulations. This is
+      the main template for simulating trajectories and collision checking.
+   3. mathUtils.py: Basic math utility functions.
+   4. buildWorld.py: To be used for adding walls or rooms to the environment.
+    
+   The folder `simTests/kinematics` contains wrapper functions for setting up
+   the configuration of robots.
+  
