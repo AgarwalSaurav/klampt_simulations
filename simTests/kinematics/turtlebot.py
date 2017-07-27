@@ -8,18 +8,43 @@ from klampt import *
 from klampt import vis
 from klampt.vis.glcommon import GLWidgetPlugin
 from klampt.math import so3
+import math
 import mathUtils
-class kobukiHolonomic(object):
+class turtlebot(object):
     def __init__ (self, robot, vis=None):
         self.robot = robot
         self.vis = vis
-        self.delZ = 0.15 # dummy value for the coordinate system, else it is not visible
+        self.wheelDia = 0.076
+        self.lenAxle = 0.1 ## Centre to centre wheel distance (Need to confirm the value)
+        self.eps = 0.000001 ## Small value for comaparing to zero
+        self.delZ = 0.3 # dummy value for the coordinate system, else it is not visible
         rotMat = so3.identity()
         pt = [0, 0, 0]
+        
         if self.vis is not None:
             self.vis.add("Robot",[rotMat, pt])
             self.vis.setAttribute("Robot", "size", 32)
             self.vis.edit("Robot")
+
+    def wheelControlKin(self, w_l, w_r, deltaT):
+        q = self.getConfig()
+        v_l = w_l * self.wheelDia/2.0
+        v_r = w_r * self.wheelDia/2.0
+        ## Distance from ICC to centre of axle
+        if abs(v_r - v_l) < self.eps:
+            q[0] =  q[0] + v_l * deltaT * math.cos(q[2])
+            q[1] =  q[1] + v_l * deltaT * math.sin(q[2])
+        else:            
+            rad = (v_l + v_r)/(2*(v_r - v_l))
+            angVel = (v_r - v_l)/self.lenAxle
+            icc = [q[0] - rad * math.sin(q[2]), q[1] + rad * math.cos(q[2])]
+            cosOmegaDeltaT = math.cos(angVel * deltaT)
+            sinOmegaDeltaT = math.sin(angVel * deltaT)
+            q[0] = (q[0] - icc[0]) * cosOmegaDeltaT - (q[1] - icc[1]) * sinOmegaDeltaT + icc[0]
+            q[1] = (q[0] - icc[0]) * sinOmegaDeltaT + (q[1] - icc[1]) * cosOmegaDeltaT + icc[1]
+            q[2] = q[2] + angVel * deltaT
+            
+        self.setConfig(q)
 
     def getConfig(self):
         q = self.robot.getConfig()

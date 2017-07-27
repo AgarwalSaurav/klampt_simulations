@@ -21,6 +21,7 @@ import buildWorld as bW
 sys.path.append("./kinematics/")
 from sphero6DoF import sphero6DoF
 from kobukiHolonomic import kobukiHolonomic
+from turtlebot import turtlebot
 from decimal import Decimal
 
 if __name__ == "__main__":
@@ -50,9 +51,10 @@ if __name__ == "__main__":
 
     ## Create robot object. Change the class to the desired robot. 
     ## Also, make sure the robot class corresponds to the robot in simpleWorld.xml file
-    robot = kobukiHolonomic(world.robot(0), vis)
-    robot.setAltitude(0.1)
-    #robot = turtlebot(world.robot(0), vis)
+    #robot = kobukiHolonomic(world.robot(0), vis)
+    #robot.setAltitude(0.01)
+    robot = turtlebot(world.robot(0), vis)
+    robot.setAltitude(0.02)
     #robot = sphero6DoF(world.robot(0), vis)
 
     ## Display the world coordinate system
@@ -95,6 +97,7 @@ if __name__ == "__main__":
     vis.show()
     simTime = 30
     startTime = time.time()
+    oldTime = startTime
     while vis.shown() and (time.time() - startTime < simTime):
         vis.lock()
         ## You may modify the world here.
@@ -105,23 +108,30 @@ if __name__ == "__main__":
         #q[0] = math.sin(time.time())
         #q[1] = math.cos(time.time())
         #q[2] = 0.5
-        #q[3] = 2 * math.pi * (math.cos(time.time()) + 1)
-        #q[4] = 2 * math.pi * (math.sin(time.time()) + 1)
-        #q[5] = 2 * math.pi * (math.sin(time.time() + math.pi/4.0) + 1)
+        #q[3] = math.pi * (math.cos(time.time()) + 1)
+        #q[4] = math.pi * (math.sin(time.time()) + 1)
+        #q[5] = math.pi * (math.sin(time.time() + math.pi/4.0) + 1)
 
         ## 3DoF holonomic kobuki
-        q = robot.getConfig()
-        q[0] = math.cos(time.time())
-        q[1] = math.sin(time.time())
-        q[2] = 2 * math.pi * (math.cos(time.time()) + 1)
-        
-        ## Turtlebot 
         #q = robot.getConfig()
         #q[0] = math.cos(time.time())
         #q[1] = math.sin(time.time())
-        #q[2] = 2 * math.pi * (math.cos(time.time()) + 1)
+        #q[2] = math.pi * (math.cos(time.time()) + 1)
+        
+        ## Turtlebot  2DoF Non-holonomic
+        ## The controls are in terms of forward velocity (along x-axis) and angular velocity (about z-axis)
+        ## The state of the robot is described as (x, y, alpha)
+        ## The kinematics for converting the control inputs to the state vector is given in the function turtlebot.controlKin
+        ## The kinematics for converting lower lever control input as per angular velocity of wheels (w_l, w_r) is given in the function turtlebot.wheelControlKin
+        ## We can also operate as a holonomic robot by directly providing the x, y, alpha positions
+        w_r = -math.cos(time.time())
+        w_l = -math.sin(time.time())
+        deltaT = time.time() - oldTime
+        oldTime = time.time()
+        robot.wheelControlKin(w_l, w_r, deltaT)
 
-        robot.setConfig(q)
+        #robot.setConfig(q)
+        q = robot.getConfig()
         q2f = [ '{0:.2f}'.format(elem) for elem in q]
         strng = "Robot configuration: " + str(q2f)
         vis.addText("textConfig", strng)
