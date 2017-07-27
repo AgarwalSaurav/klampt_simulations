@@ -20,6 +20,7 @@ import math
 import buildWorld as bW
 sys.path.append("./kinematics/")
 from sphero6DoF import sphero6DoF
+from kobukiHolonomic import kobukiHolonomic
 from decimal import Decimal
 
 if __name__ == "__main__":
@@ -49,9 +50,10 @@ if __name__ == "__main__":
 
     ## Create robot object. Change the class to the desired robot. 
     ## Also, make sure the robot class corresponds to the robot in simpleWorld.xml file
-    #robot = kobukiHolonomic(world.robot(0), vis)
+    robot = kobukiHolonomic(world.robot(0), vis)
+    robot.setAltitude(0.1)
     #robot = turtlebot(world.robot(0), vis)
-    robot = sphero6DoF(world.robot(0), vis)
+    #robot = sphero6DoF(world.robot(0), vis)
 
     ## Display the world coordinate system
     vis.add("WCS",[so3.identity(),[0,0,0]])
@@ -89,21 +91,36 @@ if __name__ == "__main__":
 
     collisionFlag = collisionChecker.robotTerrainCollisions(world.robot(0), world.terrain(0))
     print(collisionFlag)
-    print(next(collisionFlag))
+    #print(next(collisionFlag))
     vis.show()
     simTime = 30
     startTime = time.time()
     while vis.shown() and (time.time() - startTime < simTime):
         vis.lock()
-        ## TODO: you may modify the world here.
+        ## You may modify the world here.
         ## Specifying change in configuration of the robot
+
+        ## 6DoF spherical robot
+        #q = robot.getConfig()
+        #q[0] = math.sin(time.time())
+        #q[1] = math.cos(time.time())
+        #q[2] = 0.5
+        #q[3] = 2 * math.pi * (math.cos(time.time()) + 1)
+        #q[4] = 2 * math.pi * (math.sin(time.time()) + 1)
+        #q[5] = 2 * math.pi * (math.sin(time.time() + math.pi/4.0) + 1)
+
+        ## 3DoF holonomic kobuki
         q = robot.getConfig()
-        q[0] = math.sin(time.time())
-        q[1] = math.cos(time.time())
-        q[2] = 0.5
-        q[3] = 2 * math.pi * (math.cos(time.time()) + 1)
-        q[4] = 2 * math.pi * (math.sin(time.time()) + 1)
-        q[5] = 2 * math.pi * (math.sin(time.time() + math.pi/4.0) + 1)
+        q[0] = math.cos(time.time())
+        q[1] = math.sin(time.time())
+        q[2] = 2 * math.pi * (math.cos(time.time()) + 1)
+        
+        ## Turtlebot 
+        #q = robot.getConfig()
+        #q[0] = math.cos(time.time())
+        #q[1] = math.sin(time.time())
+        #q[2] = 2 * math.pi * (math.cos(time.time()) + 1)
+
         robot.setConfig(q)
         q2f = [ '{0:.2f}'.format(elem) for elem in q]
         strng = "Robot configuration: " + str(q2f)
