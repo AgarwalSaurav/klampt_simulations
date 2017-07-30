@@ -20,7 +20,7 @@ import math
 import buildWorld as bW
 sys.path.append("./kinematics/")
 from sphero6DoF import sphero6DoF
-from kobukiHolonomic import kobukiHolonomic
+from kobuki import kobuki
 from turtlebot import turtlebot
 from decimal import Decimal
 
@@ -39,7 +39,10 @@ if __name__ == "__main__":
     coordinates.setWorldModel(world)
 
     ## Get walls
+    ## Two rooms separated by a wall with a window
     #bW.getDoubleRoomWindow(world, 8, 8, 1.2)
+    
+    ## Two rooms separated by a wall with a door 
     bW.getDoubleRoomDoor(world, 8, 8, 1)
 
     ## Add the world to the visualizer
@@ -51,10 +54,12 @@ if __name__ == "__main__":
 
     ## Create robot object. Change the class to the desired robot. 
     ## Also, make sure the robot class corresponds to the robot in simpleWorld.xml file
-    #robot = kobukiHolonomic(world.robot(0), vis)
+    #robot = kobuki(world.robot(0), vis)
     #robot.setAltitude(0.01)
+
     robot = turtlebot(world.robot(0), vis)
     robot.setAltitude(0.02)
+    
     #robot = sphero6DoF(world.robot(0), vis)
 
     ## Display the world coordinate system
@@ -69,18 +74,10 @@ if __name__ == "__main__":
     vis.listItems(indent=2)
 
     vis.autoFitCamera()
-    print("Collision check:")
     vis.addText("textCol", "No collision")
     vis.setAttribute("textCol","size",24)
     collisionFlag = False
     collisionChecker = collide.WorldCollider(world)
-    for i,j in collisionChecker.collisionTests():
-        if i[1].collides(j[1]):
-            collisionFlag = True
-            strng = "Object "+i[0].getName()+" collides with "+j[0].getName()
-            print(strng)
-            vis.addText("textCol", strng)
-
     ## On-screen text display
     vis.addText("textConfig","Robot configuration: ")
     vis.setAttribute("textConfig","size",24)
@@ -111,26 +108,33 @@ if __name__ == "__main__":
         #q[3] = math.pi * (math.cos(time.time()) + 1)
         #q[4] = math.pi * (math.sin(time.time()) + 1)
         #q[5] = math.pi * (math.sin(time.time() + math.pi/4.0) + 1)
+        #robot.setConfig(q)
 
         ## 3DoF holonomic kobuki
         #q = robot.getConfig()
         #q[0] = math.cos(time.time())
         #q[1] = math.sin(time.time())
         #q[2] = math.pi * (math.cos(time.time()) + 1)
+        #robot.setConfig(q)
         
         ## Turtlebot  2DoF Non-holonomic
         ## The controls are in terms of forward velocity (along x-axis) and angular velocity (about z-axis)
         ## The state of the robot is described as (x, y, alpha)
         ## The kinematics for converting the control inputs to the state vector is given in the function turtlebot.controlKin
-        ## The kinematics for converting lower lever control input as per angular velocity of wheels (w_l, w_r) is given in the function turtlebot.wheelControlKin
-        ## We can also operate as a holonomic robot by directly providing the x, y, alpha positions
-        w_r = -math.cos(time.time())
-        w_l = -math.sin(time.time())
+        vel = 0.5*math.cos(time.time())
+        omega = math.sin(time.time())
         deltaT = time.time() - oldTime
         oldTime = time.time()
-        robot.wheelControlKin(w_l, w_r, deltaT)
+        robot.velControlKin(vel, omega, deltaT)
 
-        #robot.setConfig(q)
+        ## The kinematics for converting lower lever control input as per angular velocity of wheels (w_l, w_r) is given in the function turtlebot.wheelControlKin
+        ## We can also operate as a holonomic robot by directly providing the x, y, alpha positions directly (similar to holonomic kobuki)
+        #w_r = math.cos(time.time())
+        #w_l = math.sin(time.time())
+        #deltaT = time.time() - oldTime
+        #oldTime = time.time()
+        #robot.wheelControlKin(w_l, w_r, deltaT)
+
         q = robot.getConfig()
         q2f = [ '{0:.2f}'.format(elem) for elem in q]
         strng = "Robot configuration: " + str(q2f)
@@ -138,13 +142,30 @@ if __name__ == "__main__":
 
         ## Checking collision
         collisionFlag = False
-        for i,j in collisionChecker.collisionTests():
-            if i[1].collides(j[1]):
-                collisionFlag = True
-                strng = "Object "+i[0].getName()+" collides with "+j[0].getName()
-                print(strng)
-                vis.addText("textCol", strng)
-                vis.setColor("textCol", 0.8500, 0.3250, 0.0980)
+        #for i,j in collisionChecker.collisionTests():
+        #    if i[1].collides(j[1]):
+        #        collisionFlag = True
+        #        strng = "Object "+i[0].getName()+" collides with "+j[0].getName()
+        #        print(strng)
+        #        vis.addText("textCol", strng)
+        #        vis.setColor("textCol", 0.8500, 0.3250, 0.0980)
+        collRT0 = collisionChecker.robotTerrainCollisions(world.robot(0), world.terrain(0))
+        for i,j in collRT0:
+            collisionFlag = True
+            strng = "Robot collides with "+j.getName()
+            print(strng)
+            vis.addText("textCol", strng)
+            vis.setColor("textCol", 0.8500, 0.3250, 0.0980)
+            break
+  
+        collRT1 = collisionChecker.robotTerrainCollisions(world.robot(0), world.terrain(1))
+        for i,j in collRT1:
+            collisionFlag = True
+            strng = "Robot collides with "+j.getName()
+            print(strng)
+            vis.addText("textCol", strng)
+            vis.setColor("textCol", 0.8500, 0.3250, 0.0980)
+            break
 
         if not collisionFlag:
             vis.addText("textCol", "No collision")

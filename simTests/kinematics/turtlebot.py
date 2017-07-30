@@ -3,6 +3,8 @@
 ## The first three elements of the configuration are (x, y, z)
 ## The next three are zyx Euler angles
 ## The function getTransform is for getting the rotation and the translation of the current position of the robot
+## The function velControlKin is for converting velocity control inputs (linear along local x, and angular about local z) into state vector
+## The function wheelControlKin is for converting wheel velocity control inputs (angular wheel left and right) into state vector
 
 from klampt import *
 from klampt import vis
@@ -11,13 +13,14 @@ from klampt.math import so3
 import math
 import mathUtils
 class turtlebot(object):
+
     def __init__ (self, robot, vis=None):
         self.robot = robot
         self.vis = vis
         self.wheelDia = 0.076
         self.lenAxle = 0.1 ## Centre to centre wheel distance (Need to confirm the value)
         self.eps = 0.000001 ## Small value for comaparing to zero
-        self.delZ = 0.3 # dummy value for the coordinate system, else it is not visible
+        self.delZ = 0.3 ## dummy value for the coordinate system, else it is not visible
         rotMat = so3.identity()
         pt = [0, 0, 0]
         
@@ -26,15 +29,28 @@ class turtlebot(object):
             self.vis.setAttribute("Robot", "size", 32)
             self.vis.edit("Robot")
 
+    def velControlKin(self, vel, omega, deltaT):
+        q = self.getConfig()
+        if abs(omega) < self.eps:
+            q[0] = q[0] + vel * deltaT * math.cos(q[2])
+            q[1] = q[1] + vel * deltaT * math.sin(q[2])
+        else:
+            rad = vel/omega
+            q[0] = q[0] - rad * math.sin(q[2]) + rad * math.sin(q[2] + omega * deltaT)
+            q[1] = q[1] + rad * math.cos(q[2]) - rad * math.cos(q[2] + omega * deltaT)
+            q[2] = q[2] + omega * deltaT
+        self.setConfig(q)
+
+
     def wheelControlKin(self, w_l, w_r, deltaT):
         q = self.getConfig()
         v_l = w_l * self.wheelDia/2.0
         v_r = w_r * self.wheelDia/2.0
-        ## Distance from ICC to centre of axle
         if abs(v_r - v_l) < self.eps:
             q[0] =  q[0] + v_l * deltaT * math.cos(q[2])
             q[1] =  q[1] + v_l * deltaT * math.sin(q[2])
         else:            
+            ## Distance from ICC to centre of axle
             rad = (v_l + v_r)/(2*(v_r - v_l))
             angVel = (v_r - v_l)/self.lenAxle
             icc = [q[0] - rad * math.sin(q[2]), q[1] + rad * math.cos(q[2])]
@@ -43,7 +59,6 @@ class turtlebot(object):
             q[0] = (q[0] - icc[0]) * cosOmegaDeltaT - (q[1] - icc[1]) * sinOmegaDeltaT + icc[0]
             q[1] = (q[0] - icc[0]) * sinOmegaDeltaT + (q[1] - icc[1]) * cosOmegaDeltaT + icc[1]
             q[2] = q[2] + angVel * deltaT
-            
         self.setConfig(q)
 
     def getConfig(self):
@@ -79,3 +94,4 @@ class turtlebot(object):
             pt = trans[1]
             pt[2] = pt[2] + self.delZ
             self.vis.add("Robot",[rotMat, pt], keepAppearance=True)
+
