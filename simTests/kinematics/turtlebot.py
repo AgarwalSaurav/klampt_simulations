@@ -18,7 +18,7 @@ class turtlebot(object):
         self.robot = robot
         self.vis = vis
         self.wheelDia = 0.076
-        self.lenAxle = 0.1 ## Centre to centre wheel distance (Need to confirm the value)
+        self.lenAxle = 0.23 ## Centre to centre wheel distance (Need to confirm the value)
         self.eps = 0.000001 ## Small value for comaparing to zero
         self.delZ = 0.3 ## dummy value for the coordinate system, else it is not visible
         rotMat = so3.identity()
