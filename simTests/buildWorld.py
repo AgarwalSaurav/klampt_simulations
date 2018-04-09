@@ -59,7 +59,7 @@ def getDoubleRoomDoor(world, dimX, dimY, dimZ, color = [0.85, 0.85, 0.85, 1], wa
     for i,elem in enumerate([w1, w2, w3, w4, w5, w6]):
 	g = Geometry3D(elem)
 	DRDgeom.setElement(i,g)
-    drd_setup = world.makeTerrain("DRD")
+    drd_setup = world.makeRigidObject("DRD")
     drd_setup.geometry().set(DRDgeom)
     r = color[0]
     g = color[1]
@@ -87,7 +87,7 @@ def getDoubleRoomWindow(world, dimX, dimY, dimZ, color = [0.85, 0.85, 0.85, 1], 
     for i,elem in enumerate([w1, w2, w3, w4, w5, w6, w7, w8]):
 	g = Geometry3D(elem)
 	DRDgeom.setElement(i,g)
-    drd_setup = world.makeTerrain("DRD")
+    drd_setup = world.makeRigidObject("DRD")
     drd_setup.geometry().set(DRDgeom)
     r = color[0]
     g = color[1]
