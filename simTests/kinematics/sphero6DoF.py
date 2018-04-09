@@ -1,4 +1,7 @@
 #!/usr/bin/python
+##Author: Saurav Agarwal
+##E-mail: sagarw10@uncc.edu
+
 ## The class contains wrapper functions to set and get configuration of 6DoF spherical robot
 ## The first three elements of the configuration are (x, y, z)
 ## The next three are zyx Euler angles

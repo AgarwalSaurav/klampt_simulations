@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+##Author: Saurav Agarwal
+##E-mail: sagarw10@uncc.edu
+
 ## The functions are for creating additional components for the environment
 ##  1. getWall: Get the geometry of a wall based on given dimensions
 ##  2. getWall_terrain: Attach a single wall to terrain

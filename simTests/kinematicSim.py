@@ -1,4 +1,6 @@
 #!/usr/bin/python
+##Author: Saurav Agarwal
+##E-mail: sagarw10@uncc.edu
 ## The file demonstrates:
 ##   1. Adding rooms and walls to the environment (refer to buildWorld.py as well)
 ##   2. Setting up a robot

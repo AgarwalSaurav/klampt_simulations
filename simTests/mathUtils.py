@@ -1,6 +1,9 @@
 import math
 from klampt.math import so3
 
+##Author: Saurav Agarwal
+##E-mail: sagarw10@uncc.edu
+
 ## Get rotation matrix from zyx Euler angles
 def euler_zyx_mat(theta):
     """For the zyx euler angles theta=(rz,ry,rx), produces a matrix A such that
