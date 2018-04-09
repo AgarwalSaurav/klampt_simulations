@@ -16,16 +16,17 @@ from klampt.math import so3
 import mathUtils
 
 class kobuki(object):
-    def __init__ (self, robot, vis=None):
+    def __init__ (self, robot, robotName, vis=None):
         self.robot = robot
+        self.robotName = robotName
         self.vis = vis
         self.delZ = 0.15 # dummy value for the coordinate system, else it is not visible
         rotMat = so3.identity()
         pt = [0, 0, 0]
         if self.vis is not None:
-            self.vis.add("Robot",[rotMat, pt])
-            self.vis.setAttribute("Robot", "size", 32)
-            self.vis.edit("Robot")
+            self.vis.add(self.robotName,[rotMat, pt])
+            self.vis.setAttribute(self.robotName, "size", 32)
+            self.vis.edit(self.robotName)
 
     def velControlKin(self, vel, omega, deltaT):
         q = self.getConfig()
@@ -74,7 +75,7 @@ class kobuki(object):
             rotMat = trans[0]
             pt = trans[1]
             pt[2] = pt[2] + self.delZ
-            self.vis.add("Robot",[rotMat, pt], keepAppearance=True)
+            self.vis.add(self.robotName,[rotMat, pt], keepAppearance=True)
         
     def getTransform(self):
         q = self.robot.getConfig()
@@ -91,4 +92,4 @@ class kobuki(object):
             rotMat = trans[0]
             pt = trans[1]
             pt[2] = pt[2] + self.delZ
-            self.vis.add("Robot",[rotMat, pt], keepAppearance=True)
+            self.vis.add(self.robotName,[rotMat, pt], keepAppearance=True)

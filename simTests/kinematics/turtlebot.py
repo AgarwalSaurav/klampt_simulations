@@ -17,8 +17,9 @@ import math
 import mathUtils
 class turtlebot(object):
 
-    def __init__ (self, robot, vis=None):
+    def __init__ (self, robot, robotName, vis=None):
         self.robot = robot
+        self.robotName = robotName
         self.vis = vis
         self.wheelDia = 0.076
         self.lenAxle = 0.23 ## Centre to centre wheel distance (Need to confirm the value)
@@ -28,9 +29,9 @@ class turtlebot(object):
         pt = [0, 0, 0]
         
         if self.vis is not None:
-            self.vis.add("Robot",[rotMat, pt])
-            self.vis.setAttribute("Robot", "size", 32)
-            self.vis.edit("Robot")
+            self.vis.add(self.robotName,[rotMat, pt])
+            self.vis.setAttribute(self.robotName, "size", 32)
+            self.vis.edit(self.robotName)
 
     def velControlKin(self, vel, omega, deltaT):
         q = self.getConfig()
@@ -79,7 +80,7 @@ class turtlebot(object):
             rotMat = trans[0]
             pt = trans[1]
             pt[2] = pt[2] + self.delZ
-            self.vis.add("Robot",[rotMat, pt], keepAppearance=True)
+            self.vis.add(self.robotName,[rotMat, pt], keepAppearance=True)
         
     def getTransform(self):
         q = self.robot.getConfig()
@@ -96,5 +97,5 @@ class turtlebot(object):
             rotMat = trans[0]
             pt = trans[1]
             pt[2] = pt[2] + self.delZ
-            self.vis.add("Robot",[rotMat, pt], keepAppearance=True)
+            self.vis.add(self.robotName,[rotMat, pt], keepAppearance=True)
 
